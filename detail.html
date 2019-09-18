@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>vue detail</title>
+	<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<script src="https://cdn.bootcss.com/qs/6.8.0/qs.min.js"></script>
+	<style>
+		button {
+			width: 120px;
+			height: 24px;
+			background-color: #137cbd;
+			border: 1px solid #137cbd;
+			color: #fff;
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body>
+<div id="app">
+	<p>{{ title }}</p>
+
+	<hr>
+
+	<div>
+		<div style="margin-bottom: 10px">
+			<label>序号:</label>
+			<span>{{detail.id}}</span>
+		</div>
+		<div style="margin-bottom: 10px">
+			<label>名称:</label>
+			<span>{{detail.name}}</span>
+		</div>
+		<div style="margin-bottom: 10px">
+			<label>年龄:</label>
+			<span>{{detail.age}}</span>
+		</div>
+
+	</div>
+
+	<div>
+		<button v-on:click="ret">返回</button>
+	</div>
+
+</div>
+</body>
+<script>
+
+	var app = new Vue({
+		el: '#app',
+		data: {
+			title: 'Detail',
+			detail: {},
+		},
+		methods: {
+			getDetail() {
+				var url = window.location.href;
+				var parm = Qs.parse(url.split('?')[1]);
+				console.log(parm);
+				axios.post('http://api.com/detail', {id: parm.id}).then(function (res) {
+					console.log(res);
+					if (res.status === 200) {
+						this.detail = res.data.detail || {};
+					}
+				}).catch(function (error) {
+					alert(error);
+				})
+			},
+			ret() {
+				window.history.back();
+			},
+		},
+		created() {
+			this.getDetail();
+		},
+	})
+
+</script>
+</html>

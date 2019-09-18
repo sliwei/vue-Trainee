@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>vue login</title>
+	<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<style>
+		label {
+			display: inline-block;
+			width: 50px;
+		}
+		input {
+			width: 200px;
+			height: 36px;
+			border: 1px solid #137cbd;
+			box-sizing: border-box;
+			margin-bottom: 20px;
+			padding: 0 0 0 5px;
+		}
+		button {
+			width: 200px;
+			height: 36px;
+			background-color: #137cbd;
+			border: 1px solid #137cbd;
+			margin-left: 55px;
+			color: #fff;
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body>
+<div id="app">
+	<p>{{ title }}</p>
+
+	<hr>
+
+	<form action="##">
+		<div>
+			<label for="user">账户</label>
+			<input v-model="form.user" id="user" type="text">
+			<span style="color: #f00">{{errorTxt.user}}</span>
+		</div>
+		<div>
+			<label for="password">密码</label>
+			<input v-model="form.password" id="password" type="password">
+			<span style="color: #f00">{{errorTxt.password}}</span>
+		</div>
+		<div>
+			<button v-on:click="login">登入</button>
+		</div>
+	</form>
+
+</div>
+</body>
+<script>
+
+	var app = new Vue({
+		el: '#app',
+		data: {
+			title: 'Login',
+			form: {
+				user: '',
+				password: '',
+			},
+			errorTxt: {
+				user: '',
+				password: '',
+			},
+		},
+		methods: {
+			login() {
+				if (!this.form.user) {
+					var errorTxt = this.errorTxt;
+					errorTxt.user = '账户不能为空';
+					this.errorTxt = errorTxt;
+					return false;
+				}
+				if (!this.form.password) {
+					var errorTxt = this.errorTxt;
+					errorTxt.password = '密码不能为空';
+					this.errorTxt = errorTxt;
+					return false;
+				}
+				axios.post('http://api.com/login', this.form).then(function (res) {
+					if (res.status === 200) {
+						window.location.href = 'index.html'
+					} else {
+						alert('账户密码错误')
+					}
+				}).catch(function (error) {
+					alert(error)
+					window.location.href = 'index.html'
+				})
+			},
+		},
+		created() {
+		},
+		watch: {
+			'form.user': function (newVal, oldVal) {
+				var errorTxt = this.errorTxt;
+				if (newVal) {
+					errorTxt.user = '';
+				} else {
+					errorTxt.user = '账户不能为空';
+				}
+				this.errorTxt = errorTxt;
+			},
+			'form.password': function (newVal, oldVal) {
+				var errorTxt = this.errorTxt;
+				if (newVal) {
+					errorTxt.password = '';
+				} else {
+					errorTxt.password = '密码不能为空';
+				}
+				this.errorTxt = errorTxt;
+			},
+		},
+	})
+
+</script>
+</html>

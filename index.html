@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>vue list</title>
+	<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+	<!--使用标签引入vue.js 链接：https://cn.vuejs.org/v2/guide/installation.html#%E7%9B%B4%E6%8E%A5%E7%94%A8-lt-script-gt-%E5%BC%95%E5%85%A5-->
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<!--用于发送http请求的插件-->
+	<style>
+		th, td {
+			padding: 6px 12px;
+		}
+		.mask {
+			width: 100%;
+			height: 100vh;
+			position: absolute;
+			left: 0;
+			top: 0;
+			z-index: 1000;
+			background-color: rgba(0,0,0,.4);
+		}
+		.model {
+			width: 300px;
+			height: 200px;
+			position: absolute;
+			z-index: 1001;
+			top: 200px;
+			left: 50%;
+			margin-left: -150px;
+			background-color: #ffffff;
+			box-shadow: 0 0 0 5px #ddd;
+		}
+		.del_yes {
+			width: 120px;
+			height: 24px;
+			background-color: #f00;
+			border: 1px solid #f00;
+			color: #fff;
+			cursor: pointer;
+		}
+		.del_no {
+			width: 120px;
+			height: 24px;
+			background-color: #666;
+			border: 1px solid #666;
+			color: #fff;
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body>
+<!-- 注意：id="app"标签对应new Vue中的el: '#app',再能使vue函数中的方法数据在这个div下生效 -->
+<div id="app">
+	<!--标题 Start-->
+	<p>{{ message }} <a href="login.html" style="float: right">Login</a>  </p>
+	<!--在标签内使用 {{}} 的方式来填充数据，可以填充 data 中的字段或 methods 中的方法 链接：https://cn.vuejs.org/v2/guide/index.html#%E5%A3%B0%E6%98%8E%E5%BC%8F%E6%B8%B2%E6%9F%93-->
+	<!--标题 End-->
+
+	<hr>
+
+	<!--表格 Start-->
+	<table border="1" style="border-collapse: collapse;">
+		<thead>
+		<tr>
+			<th>序号</th>
+			<th>名称</th>
+			<th>年龄</th>
+			<th>操作</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr v-for="(item, index) in list" v-bind:key="index">
+			<!-- v-if v-for 条件与循环 链接：https://cn.vuejs.org/v2/guide/index.html#%E6%9D%A1%E4%BB%B6%E4%B8%8E%E5%BE%AA%E7%8E%AF-->
+			<td>{{item.id}}</td>
+			<td>{{item.name}}</td>
+			<td>{{item.age}}</td>
+			<td>
+				<a v-bind:href="'detail.html?id='+item.id">详情</a>
+				<a href="javascript:;" v-on:click="del(item.id)">删除</a>
+				<!--v-bind v-on 指令 链接：https://cn.vuejs.org/v2/guide/syntax.html#%E6%8C%87%E4%BB%A4-->
+			</td>
+		</tr>
+		</tbody>
+	</table>
+	<!--表格 End-->
+
+	<!--删除弹窗 Start-->
+	<div class="mask" v-if="delSta"></div>
+	<div v-if="delSta" class="model">
+		<div style="padding: 60px 10px;text-align: center">是否删除</div>
+		<div style="margin: 0 auto;text-align: center">
+			<button class="del_yes" v-on:click="deletes">是</button>
+			<button class="del_no" v-on:click="close">否</button>
+		</div>
+	</div>
+	<!--删除弹窗 End-->
+
+</div>
+</body>
+<script>
+
+	// 梳理整个过程
+
+	// 1 在head标签里引入vue.js
+	// 2 绘制页面以及样式，本页面有一个标题、有一个表格和一个弹窗model
+	// 3 创建一个vue函数
+	// 3.1 函数解释
+	// 3.1.1 el:对应vue函数在页面的id为app的标签内生效
+	// 3.1.2 data:vue函数的数据
+	// 3.1.3 methods:vue事件函数
+	// 3.1.5 beforeCreate、created、beforeMount、mounted、beforeDestroy、destroyed常见生命周期（created、mounted和destroyed为常用）
+
+	// 注意：
+	// 1 在vue中,data里面的字段不能与methods方法函数名重复
+	// 2 vue的data中的数据字段具有双向绑定的特性(即标签改变可以改变data里的数据。data的数据改变，标签的值也会改变)
+
+	var app = new Vue({
+		el: '#app',
+		// data vue函数的数据，可以用来渲染页面数据或者在methods(方法)操作
+		// https://cn.vuejs.org/v2/guide/instance.html#%E6%95%B0%E6%8D%AE%E4%B8%8E%E6%96%B9%E6%B3%95
+		data: {
+			message: 'List',
+			list: [{id:1,name: 'tony',age: 25}],
+			delSta: false,
+			operationId: '',
+		},
+		// vue事件函数，可以在标签 v-on:click v-on:change 绑定后触发，也可以在生命周期中直接调用，如：getList在created调用
+		// https://cn.vuejs.org/v2/guide/events.html#%E4%BA%8B%E4%BB%B6%E5%A4%84%E7%90%86%E6%96%B9%E6%B3%95
+		methods: {
+			// 获取列表的函数，使用axios发送了一个post请求，返回的数据赋值给了list，list对应的data中的list
+			getList() {
+				axios.post('http://api.com/list').then(function (res) {
+					console.log(res);
+					if (res.status === 200) {
+						this.list = res.data.list || [{id:1,name: 'tony',age: 25}];
+					}
+				}).catch(function (error) {
+					console.log(error);
+				})
+			},
+			// 点击删除按钮调用，把delSta设置为了true，打开是否删除确认框
+			del(id) {
+				this.operationId = id;
+				this.delSta = true;
+			},
+			// 点击弹窗中“是”按钮调用，发送删除请求，结束后关闭弹窗，再调用一个获取列表接口刷新列表
+			deletes() {
+				axios.post('http://api.com/del', {id: this.operationId}).then(function (res) {
+					console.log(res);
+					if (res.status === 200) {
+						this.close();
+						this.getList();
+						alert('删除成功')
+					} else {
+						alert('删除失败')
+					}
+				}).catch(function (error) {
+					console.log(error);
+				});
+			},
+			// 点击弹窗中“是”按钮调用，关闭弹窗
+			close() {
+				this.delSta = false;
+			},
+		},
+		// 生命周期
+		// https://cn.vuejs.org/v2/guide/instance.html#%E5%AE%9E%E4%BE%8B%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E9%92%A9%E5%AD%90
+		beforeCreate() {
+			// 页面创建之前
+		},
+		created() {
+			// 在模板渲染成html前调用，即通常初始化某些属性值，然后再渲染成视图。
+			// 不操作dom可在此调用，比如请求、初始化函数
+			this.getList();
+		},
+		beforeMount() {},
+		mounted() {
+			// 在模板渲染成html后调用，通常是初始化页面完成后，再对html的dom节点进行一些需要的操作。
+			// 如果要操作dom，需要再此调用
+		},
+		beforeDestroy() {},
+		destroyed() {
+			// 注销页面
+		}
+	})
+</script>
+</html>
